@@ -28,7 +28,7 @@ def convert_pdf_to_text(pdf_content):
     return pdf_text
 
 
-query = "Where are the top startups located?"
+query = input("Enter your question: ")
 result = qa_pipeline(question=query, context=convert_pdf_to_text(pdf_content))
 
 print(result['answer'])
