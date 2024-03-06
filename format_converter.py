@@ -1,7 +1,7 @@
 from spire.doc import Document, ToPdfParameterList, PdfConformanceLevel
 
 
-def format_converter(input_path):
+def format_converter(input_path: str):
     document = Document()
     document.LoadFromFile(input_path)
     parameters = ToPdfParameterList()
