@@ -1,27 +1,34 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader
+import PyPDF2
+from transformers import pipeline
 
 import format_converter
 import format_detector
 
-path = input('Enter a path to the file: ')
+qa_pipeline = pipeline('question-answering', model='bert-large-uncased-whole-word-masking-finetuned-squad')
+
+path = input("Enter the path to the document: ")
 
 if format_detector.format_detector(path)[:3] != 'PDF':
     format_converter.format_converter(path)
-    loader = PyPDFLoader('data.pdf')
+    with open('data.pdf', 'rb') as file:
+        pdf_content = file.read()
+        path = 'data.pdf'
 else:
-    loader = PyPDFLoader(path)
+    with open(path, 'rb') as file:
+        pdf_content = file.read()
 
-document = loader.load()
 
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=500,
-    length_function=len,
-    add_start_index=True
-)
+def convert_pdf_to_text(pdf_content):
+    pdf_text = ""
+    with open(path, 'rb') as file:
+        pdf_reader = PyPDF2.PdfReader(file)
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            pdf_text += page.extract_text()
+    return pdf_text
 
-chunks = text_splitter.split_documents(document)
-document = chunks[1]
 
-print(document.page_content)
+query = "Where are the top startups located?"
+result = qa_pipeline(question=query, context=convert_pdf_to_text(pdf_content))
+
+print(result['answer'])
